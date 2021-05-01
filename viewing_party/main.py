@@ -5,5 +5,11 @@ def create_movie(title:str, genre:str, rating:float):
 
 # Add the given movie to list found at user_data.watched
 def add_to_watched(user_data: dict, movie: dict):
-    user_data["watched"].append(movie)
+    return append_to_user_data(user_data, movie, "watched")
+
+def add_to_watchlist(user_data: dict, movie: dict):
+    return append_to_user_data(user_data, movie, "watchlist")
+
+def append_to_user_data(user_data, movie, key):
+    user_data[key].append(movie)
     return user_data
