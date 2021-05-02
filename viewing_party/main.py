@@ -41,12 +41,23 @@ def get_most_watched_genre(user_data: dict):
     return max(genre_counts, key=genre_counts.get)
 
 def get_unique_watched(user_data: dict):
-    user_watched = user_data["watched"]
-    friends_watched = list(iter_friends_watched(user_data["friends"]))
-    unique_movies = filter(lambda movie: movie not in friends_watched, user_watched)
+    friends_watched = get_friends_watched_set(user_data["friends"])
+    unique_movies = filter(lambda movie: movie not in friends_watched, user_data["watched"])
     return list(unique_movies)
+
+# returns a list since the movie dicts are not hashable
+def get_friends_watched_set(friends: list):
+    watched = list(iter_friends_watched(friends))
+    watched_set = {movie["title"]: movie for movie in watched}.values()
+    return list(watched_set)
 
 def iter_friends_watched(friends: list):
     for friend in friends:
         for movie in friend["watched"]:
             yield movie
+
+def get_friends_unique_watched(user_data: dict):
+    user_watched = user_data["watched"]
+    friends_watched = get_friends_watched_set(user_data["friends"])
+    unique_movies = filter(lambda movie: movie not in user_watched, friends_watched)
+    return list(unique_movies)
