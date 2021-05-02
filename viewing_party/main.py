@@ -27,49 +27,55 @@ def first_movie_with_title(movies: list, title: str):
 def get_watched_avg_rating(user_data: dict):
     if not user_data["watched"]:
         return 0.0
-    ratings = list(map(lambda movie: movie["rating"], user_data["watched"]))
+    ratings = [movie["rating"] for movie in user_data["watched"]]
     return sum(ratings) / len(ratings)
 
 def get_most_watched_genre(user_data: dict):
     if not user_data["watched"]:
         return None
-    genres = list(map(lambda movie: movie["genre"], user_data["watched"]))
+    genres = [movie["genre"] for movie in user_data["watched"]]
     genre_counts = dict(Counter(genres))
     return max(genre_counts, key=genre_counts.get)
 
 def get_unique_watched(user_data: dict):
-    friends_watched = get_friends_watched_set(user_data["friends"])
-    unique_movies = filter(lambda movie: movie not in friends_watched, user_data["watched"])
+    friends_watched = get_friends_watched_set(user_data)
+    is_movie_unwatched_by_friends = lambda movie: movie not in friends_watched
+    unique_movies = filter(is_movie_unwatched_by_friends, user_data["watched"])
     return list(unique_movies)
 
 # returns a list since the movie dicts are not hashable
-def get_friends_watched_set(friends: list):
-    watched = list(iter_friends_watched(friends))
-    watched_set = {movie["title"]: movie for movie in watched}.values()
-    return list(watched_set)
+def get_friends_watched_set(user_data: dict):
+    return list(iter_users_watched_unique(user_data["friends"]))
 
-def iter_friends_watched(friends: list):
-    for friend in friends:
-        for movie in friend["watched"]:
-            yield movie
+# a generator that iterates through every movie that every given user has watched but only yields movies with unique titles
+def iter_users_watched_unique(users: list):
+    yielded_titles = set()
+    for user in users:
+        for movie in user["watched"]:
+            if (movie["title"] not in yielded_titles):
+                yielded_titles.add(movie["title"])
+                yield movie
 
 def get_friends_unique_watched(user_data: dict):
-    friends_watched = get_friends_watched_set(user_data["friends"])
-    unique_movies = filter(lambda movie: movie not in user_data["watched"], friends_watched)
+    is_movie_unwatched_by_user = lambda movie: movie not in user_data["watched"]
+    unique_movies = filter(is_movie_unwatched_by_user, iter_users_watched_unique(user_data["friends"]))
     return list(unique_movies)
 
 def get_available_recs(user_data: dict):
     friends_unique_watched = get_friends_unique_watched(user_data)
-    watchable = filter(lambda movie: movie["host"] in user_data["subscriptions"], friends_unique_watched)
+    is_movie_available_in_user_subscriptions = lambda movie: movie["host"] in user_data["subscriptions"]
+    watchable = filter(is_movie_available_in_user_subscriptions, friends_unique_watched)
     return list(watchable)
 
 def get_new_rec_by_genre(user_data: dict):
     fav_genre = get_most_watched_genre(user_data)
     friends_unique_watched = get_friends_unique_watched(user_data)
-    new_recs = filter(lambda movie: movie["genre"] == fav_genre, friends_unique_watched)
+    is_movie_in_users_fav_genre = lambda movie: movie["genre"] == fav_genre
+    new_recs = filter(is_movie_in_users_fav_genre, friends_unique_watched)
     return list(new_recs)
 
 def get_rec_from_favorites(user_data: dict):
-    friends_watched = get_friends_watched_set(user_data["friends"])
-    fav_recs = filter(lambda movie: movie not in friends_watched, user_data["favorites"])
+    friends_watched = get_friends_watched_set(user_data)
+    is_movie_unwatched_by_friends = lambda movie: movie not in friends_watched
+    fav_recs = filter(is_movie_unwatched_by_friends, user_data["favorites"])
     return list(fav_recs)
