@@ -1,3 +1,5 @@
+from collections import Counter
+
 def create_movie(title: str, genre: str, rating: float):
     if not title or not genre or not rating:
         return None
@@ -22,5 +24,29 @@ def watch_movie(user_data: dict, title: str):
     return user_data
 
 def first_movie_with_title(movies: list, title: str):
-    predicate = lambda movie: movie["title"] == title
-    return next(filter(predicate, movies), None)
+    does_movie_match_title = lambda movie: movie["title"] == title
+    return next(filter(does_movie_match_title, movies), None)
+
+def get_watched_avg_rating(user_data: dict):
+    if not user_data["watched"]:
+        return 0.0
+    ratings = list(map(lambda movie: movie["rating"], user_data["watched"]))
+    return sum(ratings) / len(ratings)
+
+def get_most_watched_genre(user_data: dict):
+    if not user_data["watched"]:
+        return None
+    genres = list(map(lambda movie: movie["genre"], user_data["watched"]))
+    genre_counts = dict(Counter(genres))
+    return max(genre_counts, key=genre_counts.get)
+
+def get_unique_watched(user_data: dict):
+    user_watched = user_data["watched"]
+    friends_watched = list(iter_friends_watched(user_data["friends"]))
+    unique_movies = filter(lambda movie: movie not in friends_watched, user_watched)
+    return list(unique_movies)
+
+def iter_friends_watched(friends: list):
+    for friend in friends:
+        for movie in friend["watched"]:
+            yield movie
