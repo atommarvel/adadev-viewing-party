@@ -57,7 +57,11 @@ def iter_friends_watched(friends: list):
             yield movie
 
 def get_friends_unique_watched(user_data: dict):
-    user_watched = user_data["watched"]
     friends_watched = get_friends_watched_set(user_data["friends"])
-    unique_movies = filter(lambda movie: movie not in user_watched, friends_watched)
+    unique_movies = filter(lambda movie: movie not in user_data["watched"], friends_watched)
     return list(unique_movies)
+
+def get_available_recs(user_data: dict):
+    friends_unique_watched = get_friends_unique_watched(user_data)
+    watchable = filter(lambda movie: movie["host"] in user_data["subscriptions"], friends_unique_watched)
+    return list(watchable)
