@@ -71,3 +71,8 @@ def get_new_rec_by_genre(user_data: dict):
     friends_unique_watched = get_friends_unique_watched(user_data)
     new_recs = filter(lambda movie: movie["genre"] == fav_genre, friends_unique_watched)
     return list(new_recs)
+
+def get_rec_from_favorites(user_data: dict):
+    friends_watched = get_friends_watched_set(user_data["friends"])
+    fav_recs = filter(lambda movie: movie not in friends_watched, user_data["favorites"])
+    return list(fav_recs)
