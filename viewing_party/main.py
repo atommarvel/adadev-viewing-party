@@ -65,3 +65,9 @@ def get_available_recs(user_data: dict):
     friends_unique_watched = get_friends_unique_watched(user_data)
     watchable = filter(lambda movie: movie["host"] in user_data["subscriptions"], friends_unique_watched)
     return list(watchable)
+
+def get_new_rec_by_genre(user_data: dict):
+    fav_genre = get_most_watched_genre(user_data)
+    friends_unique_watched = get_friends_unique_watched(user_data)
+    new_recs = filter(lambda movie: movie["genre"] == fav_genre, friends_unique_watched)
+    return list(new_recs)
